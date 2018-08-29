@@ -13,6 +13,9 @@ template <typename T1, typename T2>struct TestStruct1{
 	}
 };
 
+// change 1
+// change 2
+
 int main(int argc, char **argv) {
 
 	TestFunctor1<int> functor;
