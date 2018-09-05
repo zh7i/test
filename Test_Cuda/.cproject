@@ -27,7 +27,7 @@
             			
             <storageModule moduleId="cdtBuildSystem" version="4.0.0">
                 				
-                <configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" description="" id="com.nvidia.cuda.toolchain.linux.configuration.debug.999306652" name="Debug" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=" parent="com.nvidia.cuda.toolchain.linux.configuration.debug">
+                <configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" description="" id="com.nvidia.cuda.toolchain.linux.configuration.debug.999306652" name="Debug" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="com.nvidia.cuda.toolchain.linux.configuration.debug">
                     					
                     <folderInfo id="com.nvidia.cuda.toolchain.linux.configuration.debug.999306652." name="/" resourcePath="">
                         						
@@ -37,7 +37,7 @@
                             							
                             <builder buildPath="${workspace_loc:/Test_Cuda}/Debug" id="com.nvidia.cuda.toolchain.builder.1781809223" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="CUDA Toolkit Builder" superClass="com.nvidia.cuda.toolchain.builder"/>
                             							
-                            <tool command="${nvcc} -x" id="nvcc.linker.92545286" name="NVCC linker" superClass="nvcc.linker">
+                            <tool command="${nvcc}" id="nvcc.linker.92545286" name="NVCC linker" superClass="nvcc.linker">
                                 								
                                 <inputType id="com.nvidia.cuda.toolchain.nvcc.linker.input.1031321132" superClass="com.nvidia.cuda.toolchain.nvcc.linker.input">
                                     									
@@ -59,15 +59,15 @@
                                 								
                                 <option id="nvcc.compiler.pic.1987217393" name="Position Independent Code (-fPIC)" superClass="nvcc.compiler.pic" useByScannerDiscovery="false"/>
                                 								
-                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_62_sass.966081385" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_62_sass" useByScannerDiscovery="false" value="false" valueType="boolean"/>
+                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_62_sass.966081385" name="Generate SM 6.2 SASS" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_62_sass" useByScannerDiscovery="false" value="false" valueType="boolean"/>
                                 								
-                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_sass.1754202773" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_sass" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_sass.1754202773" name="Generate SM 6.0 SASS" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_sass" useByScannerDiscovery="false" value="true" valueType="boolean"/>
                                 								
-                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_sass.210456762" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_sass" useByScannerDiscovery="false" value="false" valueType="boolean"/>
+                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_sass.210456762" name="Generate SM 3.0 SASS" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_sass" useByScannerDiscovery="false" value="false" valueType="boolean"/>
                                 								
-                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_ptx.1411408491" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_ptx" useByScannerDiscovery="false" value="false" valueType="boolean"/>
+                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_ptx.1411408491" name="Generate SM 3.0 PTX" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_ptx" useByScannerDiscovery="false" value="false" valueType="boolean"/>
                                 								
-                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_ptx.138602732" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_ptx" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_ptx.138602732" name="Generate SM 6.0 PTX" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_ptx" useByScannerDiscovery="false" value="true" valueType="boolean"/>
                                 								
                                 <inputType id="com.nvidia.cuda.toolchain.input.c.1600922799" superClass="com.nvidia.cuda.toolchain.input.c"/>
                                 								
@@ -208,5 +208,7 @@
     </storageModule>
     	
     <storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+    	
+    <storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
     
 </cproject>

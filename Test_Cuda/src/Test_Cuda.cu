@@ -3,18 +3,15 @@
 // Author      : 
 // Version     :
 // Copyright   : 
-// Description : Hello World in C++, Ansi-style
+// Description : Test of the segment plug-in
 //============================================================================
 
 #include <cuda_runtime.h>
 #include <iostream>
 #include <string>
 
-using namespace std;
-
 int main() {
 
 
-	cout << "" << endl; // prints 
 	return 0;
 }
