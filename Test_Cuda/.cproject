@@ -149,6 +149,14 @@
                                 								
                                 <option id="nvcc.compiler.pic.1290232682" name="Position Independent Code (-fPIC)" superClass="nvcc.compiler.pic" useByScannerDiscovery="false"/>
                                 								
+                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_sass.1934382737" name="Generate SM 6.0 SASS" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_sass" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+                                								
+                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_ptx.963300108" name="Generate SM 3.0 PTX" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_ptx" useByScannerDiscovery="false" value="false" valueType="boolean"/>
+                                								
+                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_sass.626085026" name="Generate SM 3.0 SASS" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_sass" useByScannerDiscovery="false" value="false" valueType="boolean"/>
+                                								
+                                <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_ptx.1432563868" name="Generate SM 6.0 PTX" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_ptx" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+                                								
                                 <inputType id="com.nvidia.cuda.toolchain.input.c.1017613761" superClass="com.nvidia.cuda.toolchain.input.c"/>
                                 								
                                 <inputType id="com.nvidia.cuda.toolchain.input.cu.1191926645" superClass="com.nvidia.cuda.toolchain.input.cu"/>
