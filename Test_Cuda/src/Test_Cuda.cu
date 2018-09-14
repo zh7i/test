@@ -24,21 +24,79 @@ static void CheckCudaErrorAux (const char *, unsigned, const char *, cudaError_t
 
 typedef float operand_type;
 
+template<typename T, typename std::enable_if<std::is_same<T, int64_t>::value == false, void>::type* = nullptr>
+__device__ void SumOpByType(T *addr, T value)
+{
+    atomicAdd(addr, value);
+}
+
+template<typename T, typename std::enable_if<std::is_same<T, int64_t>::value, void>::type* = nullptr>
+__device__ void SumOpByType(T *addr, T value)
+{
+    unsigned long long int *addr_temp = (unsigned long long int *)addr;
+    unsigned long long int value_temp = (unsigned long long int) value;
+    atomicAdd(addr_temp, value_temp);
+}
+
 template <typename T>
 struct SumOp {
     __device__ void operator()(T *addr, T value) {
-        atomicAdd(addr, value);
+        SumOpByType(addr, value);
     }
 };
+
+template<typename T, typename std::enable_if<std::is_same<T, float>::value, void>::type* = nullptr>
+__device__ void MaxOpByType(T *addr, T value)
+{
+    unsigned int *address = (unsigned int *)addr;
+    unsigned int value_old = *address, value_assumed;
+
+    do {
+        value_assumed = value_old;
+        value_old = atomicCAS(address,
+                              value_assumed,
+                              __float_as_uint(value > __uint_as_float(value_assumed) ? value : __uint_as_float(value_assumed)));
+    } while (value_assumed != value_old);
+}
+
+template<typename T, typename std::enable_if<std::is_same<T, double>::value, void>::type* = nullptr>
+__device__ void MaxOpByType(T *addr, T value)
+{
+    unsigned long long int *address = (unsigned long long int *)addr;
+    unsigned long long int value_old = *address, value_assumed;
+
+    do {
+        value_assumed = value_old;
+        value_old = atomicCAS(address,
+                              value_assumed,
+                              __double_as_longlong(value > __longlong_as_double(value_assumed) ? value : __longlong_as_double(value_assumed)));
+    } while (value_assumed != value_old);
+
+}
+
+template<typename T, typename std::enable_if<std::is_same<T, unsigned int>::value || std::is_same<T, unsigned long long int>::value ||
+                                          std::is_same<T, int>::value || std::is_same<T, long long int>::value, void>::type* = nullptr>
+__device__ void MaxOpByType(T *addr, T value)
+{
+    atomicMax(addr, value);
+}
+
+template<typename T, typename std::enable_if<std::is_same<T, int64_t>::value, void>::type* = nullptr>
+__device__ void MaxOpByType(T *addr, T value)
+{
+    unsigned long long int *addr_temp = (unsigned long long int *)addr;
+    unsigned long long int value_temp = (unsigned long long int) value;
+    atomicMax(addr_temp, value_temp);
+}
 
 template <typename T>
 struct MaxOp {
     __device__ void operator()(T *addr, T value) {
-        atomicMax(addr, value);
+        MaxOpByType(addr, value);
     }
 };
 
-template<class T, typename std::enable_if<std::is_same<T, float>::value, void>::type* = nullptr>
+template<typename T, typename std::enable_if<std::is_same<T, float>::value, void>::type* = nullptr>
 __device__ void MulOpByType(T *addr, T value)
 {
     unsigned int *address = (unsigned int *)addr;
@@ -52,7 +110,7 @@ __device__ void MulOpByType(T *addr, T value)
     } while (value_assumed != value_old);
 }
 
-template<class T, typename std::enable_if<std::is_same<T, int>::value || std::is_same<T, unsigned int>::value, void>::type* = nullptr>
+template<typename T, typename std::enable_if<std::is_same<T, int>::value || std::is_same<T, unsigned int>::value, void>::type* = nullptr>
 __device__ void MulOpByType(T *addr, T value)
 {
     unsigned int *address = (unsigned int *)addr;
@@ -66,7 +124,7 @@ __device__ void MulOpByType(T *addr, T value)
     } while (value_assumed != value_old);
 }
 
-template<class T, typename std::enable_if<std::is_same<T, double>::value, void>::type* = nullptr>
+template<typename T, typename std::enable_if<std::is_same<T, double>::value, void>::type* = nullptr>
 __device__ void MulOpByType(T *addr, T value)
 {
     unsigned long long int *address = (unsigned long long int *)addr;
@@ -80,7 +138,9 @@ __device__ void MulOpByType(T *addr, T value)
     } while (value_assumed != value_old);
 }
 
-template<class T, typename std::enable_if<std::is_same<T, long long int>::value || std::is_same<T, unsigned long long int>::value, void>::type* = nullptr>
+template<typename T, typename std::enable_if<std::is_same<T, long long int>::value ||
+                                             std::is_same<T, unsigned long long int>::value ||
+                                             std::is_same<T, int64_t>::value, void>::type* = nullptr>
 __device__ void MulOpByType(T *addr, T value)
 {
     unsigned long long int *address = (unsigned long long int *)addr;
@@ -90,7 +150,7 @@ __device__ void MulOpByType(T *addr, T value)
         value_assumed = value_old;
         value_old = atomicCAS(address,
                               value_assumed,
-                              (value * value_assumed));
+                              ((unsigned long long int)value * value_assumed));
     } while (value_assumed != value_old);
 }
 
@@ -118,7 +178,8 @@ __global__ void Segmentation(T *__restrict__ input_data,
                              int segment_result_size,
                              int total_size) {
 
-    extern __shared__ T segment_result_slm[];
+    extern __shared__ int segment_result_slm_shared[];
+    T *segment_result_slm = (T *)segment_result_slm_shared;
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     int split_size = total_size / PER_THREAD_SEG_NUM;
 
@@ -139,7 +200,6 @@ __global__ void Segmentation(T *__restrict__ input_data,
         ReductionF()(output_segment_result + threadIdx.x, segment_result_slm[threadIdx.x]);
     }
 }
-
 int main(int argc, char **argv) {
     operand_type *input_data = nullptr;
     int *input_segment_id = nullptr;
