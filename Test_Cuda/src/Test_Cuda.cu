@@ -14,15 +14,20 @@
 #include <cmath>
 #include <limits>
 #include <algorithm>
+#include <limits>
+
 
 static void CheckCudaErrorAux (const char *, unsigned, const char *, cudaError_t);
 #define CUDA_CHECK_RETURN(value) CheckCudaErrorAux(__FILE__,__LINE__, #value, value)
-#define PER_THREAD_INIT_NUM 8
-#define PER_THREAD_SEG_NUM 64
-#define ARRAY_SIZE (1024 * 64)
+#define PER_THREAD_INIT_NUM 1
+#define PER_THREAD_SEG_NUM 32
+#define ARRAY_SIZE (1024 * 1024 * 32)
 #define MAX_NUM 4
+#define THREAD_NUM 1024
+#define SEGMENT_NUM 512
 
-typedef float operand_type;
+
+typedef int operand_type;
 
 template<typename T, typename std::enable_if<std::is_same<T, int64_t>::value == false, void>::type* = nullptr>
 __device__ void SumOpByType(T *addr, T value)
@@ -164,10 +169,12 @@ struct MulOp {
 template <typename T>
 __global__ void InitValue(T *input, int total_size, T value) {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
-    int split_size = total_size / PER_THREAD_INIT_NUM;
+    if (index < value) {
+        int split_size = total_size / PER_THREAD_INIT_NUM;
 #pragma unroll
-    for (int i = 0; i < PER_THREAD_INIT_NUM; i++) {
-        input[i * split_size + index] = value;
+        for (int i = 0; i < PER_THREAD_INIT_NUM; i++) {
+            input[i * split_size + index] = value;
+        }
     }
 }
 
@@ -176,30 +183,48 @@ __global__ void Segmentation(T *__restrict__ input_data,
                              int *__restrict__ input_segment_id,
                              T *__restrict__ output_segment_result,
                              int segment_result_size,
-                             int total_size) {
+                             int total_size,
+                             T initial_value) {
 
     extern __shared__ int segment_result_slm_shared[];
     T *segment_result_slm = (T *)segment_result_slm_shared;
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     int split_size = total_size / PER_THREAD_SEG_NUM;
+    int local_index = threadIdx.x;
+    int local_size = blockDim.x;
+    int loop_slm = (segment_result_size + local_size - 1) / local_size;
 
-    if (threadIdx.x < segment_result_size) {
-        segment_result_slm[threadIdx.x] = 1;
-    }
-    __syncthreads();
+    if (index < total_size) {
+        for (int i = 0; i < loop_slm; i++) {
+            int slm_index = i * local_size + local_index;
+            if (slm_index < segment_result_size) {
+                segment_result_slm[slm_index] = initial_value;
+            }
+        }
+        __syncthreads();
 
-//#pragma unroll
-    for (int i = 0; i < PER_THREAD_SEG_NUM; i++) {
-        int segment_id = input_segment_id[split_size * i + index];
-        T data_value = input_data[split_size * i + index];
-        ReductionF()(segment_result_slm + segment_id, data_value);
-    }
-    __syncthreads();
+#pragma unroll
+        for (int i = 0; i < PER_THREAD_SEG_NUM; i++) {
+            int split_index = index + split_size * i;
+            if (split_index < total_size) {
+                int segment_id = input_segment_id[split_index];
+                T data_value = input_data[split_index];
+                ReductionF()(segment_result_slm + segment_id, data_value);
+            }
+        }
+        __syncthreads();
 
-    if (threadIdx.x < segment_result_size) {
-        ReductionF()(output_segment_result + threadIdx.x, segment_result_slm[threadIdx.x]);
+        for (int i = 0; i < loop_slm; i++) {
+            int slm_index = i * local_size + local_index;
+            if (slm_index < segment_result_size) {
+                if (slm_index < segment_result_size) {
+                    ReductionF()(output_segment_result + slm_index, segment_result_slm[slm_index]);
+                }
+            }
+        }
     }
 }
+
 int main(int argc, char **argv) {
     operand_type *input_data = nullptr;
     int *input_segment_id = nullptr;
@@ -210,9 +235,10 @@ int main(int argc, char **argv) {
     operand_type *output_segment_result_cpu = nullptr;
     operand_type *output_segment_result_gold = nullptr;
     int array_num = ARRAY_SIZE;
-    int segment_num = 512;
-    int thread_num = 512;
+    int segment_num = SEGMENT_NUM;
+    int thread_num = THREAD_NUM;
     float time = 0.0f;
+    int initial_value = 0;
 
     cudaEvent_t event1, event2;
 
@@ -256,7 +282,8 @@ int main(int argc, char **argv) {
 
 
     CUDA_CHECK_RETURN(cudaEventRecord(event1, 0));
-    InitValue<operand_type><<<1, segment_num / PER_THREAD_INIT_NUM>>>(output_segment_result, segment_num, 1);
+
+    InitValue<operand_type><<<1, segment_num / PER_THREAD_INIT_NUM>>>(output_segment_result, segment_num, initial_value);
     CUDA_CHECK_RETURN(cudaEventRecord(event2, 0));
 
     CUDA_CHECK_RETURN(cudaEventSynchronize(event2));
@@ -266,7 +293,8 @@ int main(int argc, char **argv) {
 
 
     CUDA_CHECK_RETURN(cudaEventRecord(event1, 0));
-    Segmentation<MulOp<operand_type>, operand_type><<<array_num / PER_THREAD_SEG_NUM / (thread_num * 2), thread_num * 2, segment_num * sizeof(operand_type)>>>(input_data, input_segment_id, output_segment_result, segment_num, array_num);
+    int block_num = (array_num + PER_THREAD_SEG_NUM * thread_num - 1) / (PER_THREAD_SEG_NUM * thread_num);
+    Segmentation<SumOp<operand_type>, operand_type><<<block_num, thread_num, segment_num * sizeof(operand_type)>>>(input_data, input_segment_id, output_segment_result, segment_num, array_num, initial_value);
     CUDA_CHECK_RETURN(cudaEventRecord(event2, 0));
 
     CUDA_CHECK_RETURN(cudaEventSynchronize(event2));
@@ -285,26 +313,28 @@ int main(int argc, char **argv) {
 
     // compute and compare gold
     for (int i = 0; i < segment_num; i++) {
-        output_segment_result_gold[i] = 1;
+        output_segment_result_gold[i] = initial_value;
     }
 
     clock_t begin_clock = std::clock();
     // sum reduction
-    /*
+
     for (int i = 0; i < array_num; i++) {
         output_segment_result_gold[input_segment_id_cpu[i]] += input_data_cpu[i];
     }
-    */
+
     // max reduction
     /*
     for (int i = 0; i < array_num; i++) {
         output_segment_result_gold[input_segment_id_cpu[i]] = output_segment_result_gold[input_segment_id_cpu[i]] > input_data_cpu[i] ? output_segment_result_gold[input_segment_id_cpu[i]] : input_data_cpu[i];
     }
     */
+    /*
     // mul reduction
     for (int i = 0; i < array_num; i++) {
         output_segment_result_gold[input_segment_id_cpu[i]] *= input_data_cpu[i];
     }
+    */
 
     clock_t end_clock = std::clock();
     double elapsed_cpu = double(end_clock - begin_clock) / CLOCKS_PER_SEC * 1000.0;
