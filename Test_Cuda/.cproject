@@ -51,7 +51,7 @@
                             							
                             <tool id="nvcc.archiver.1111223200" name="NVCC archiver" superClass="nvcc.archiver"/>
                             							
-                            <tool id="nvcc.compiler.423607546" name="NVCC Compiler" superClass="nvcc.compiler">
+                            <tool command="${nvcc}" id="nvcc.compiler.423607546" name="NVCC Compiler" superClass="nvcc.compiler">
                                 								
                                 <option defaultValue="true" id="com.nvidia.cuda.toolchain.compiler.device-debug.1779090934" name="Generate debug information for device code (-G)" superClass="com.nvidia.cuda.toolchain.compiler.device-debug" useByScannerDiscovery="false" valueType="boolean"/>
                                 								
@@ -119,7 +119,7 @@
             			
             <storageModule moduleId="cdtBuildSystem" version="4.0.0">
                 				
-                <configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" description="" id="com.nvidia.cuda.toolchain.linux.configuration.release.186680797" name="Release" optionalBuildProperties="" parent="com.nvidia.cuda.toolchain.linux.configuration.release">
+                <configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" description="" id="com.nvidia.cuda.toolchain.linux.configuration.release.186680797" name="Release" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="com.nvidia.cuda.toolchain.linux.configuration.release">
                     					
                     <folderInfo id="com.nvidia.cuda.toolchain.linux.configuration.release.186680797." name="/" resourcePath="">
                         						
@@ -143,7 +143,7 @@
                             							
                             <tool id="nvcc.archiver.313651424" name="NVCC archiver" superClass="nvcc.archiver"/>
                             							
-                            <tool id="nvcc.compiler.722507424" name="NVCC Compiler" superClass="nvcc.compiler">
+                            <tool command="${nvcc}" id="nvcc.compiler.722507424" name="NVCC Compiler" superClass="nvcc.compiler">
                                 								
                                 <option defaultValue="com.nvidia.cuda.toolchain.compiler.optimization.level3" id="com.nvidia.cuda.toolchain.compiler.optimization.1158776239" name="Optimization level" superClass="com.nvidia.cuda.toolchain.compiler.optimization" useByScannerDiscovery="false" valueType="enumerated"/>
                                 								
@@ -156,6 +156,12 @@
                                 <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_sass.626085026" name="Generate SM 3.0 SASS" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_30_sass" useByScannerDiscovery="false" value="false" valueType="boolean"/>
                                 								
                                 <option id="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_ptx.1432563868" name="Generate SM 6.0 PTX" superClass="com.nvidia.cuda.toolchain.compiler.cuda.sm_60_ptx" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+                                								
+                                <option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="nvcc.compiler.include.paths.1683446663" superClass="nvcc.compiler.include.paths" useByScannerDiscovery="false" valueType="includePath">
+                                    									
+                                    <listOptionValue builtIn="false" value="/usr/local/lib/python3.6/dist-packages/torch/lib/include/"/>
+                                    								
+                                </option>
                                 								
                                 <inputType id="com.nvidia.cuda.toolchain.input.c.1017613761" superClass="com.nvidia.cuda.toolchain.input.c"/>
                                 								
