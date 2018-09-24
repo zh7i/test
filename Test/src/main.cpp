@@ -1,27 +1,18 @@
 #include <iostream>
 #include <string>
+#include <ctime>
+#include <cstdlib>
 
-template <typename T1>struct TestFunctor1{
-	T1 operator()(T1 input) {
-		return input + input;
-	}
-};
+typedef double operand_type;
 
-template <typename T1, typename T2>struct TestStruct1{
-	T1 operator()(T1 input, T2 functor) {
-		return functor(input);
-	}
-};
-
-// test 1
-// test 2
-// test dev
 
 int main(int argc, char **argv) {
+    int a = 10;
+    float b = 0.1f;
 
-	TestFunctor1<int> functor;
-	TestStruct1<int, struct TestFunctor1<int>> test;
+    int c = *((int*)&b);
+    float d = (float)c;
 
-	std::cout << test(1, functor) << std::endl;
-	return 0;
+
+    return 0;
 }
